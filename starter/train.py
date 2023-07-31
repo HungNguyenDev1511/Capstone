@@ -116,7 +116,7 @@ def net(num_classes):
           Remember to use a pretrained model
     '''
     logger.info("Start creating model.")
-    model = models.resnet50(pretrained=True)
+    model = models.resnet18(pretrained=True)
 
     for param in model.parameters():
         param.requires_grad = False   
@@ -192,9 +192,9 @@ def main(args):
     valid_dataset = datasets.ImageFolder(root= valid_dir, transform= transform_valid)
     test_dataset = datasets.ImageFolder(root= test_dir, transform= transform_test)
 
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle= False)
-    valid_loader = DataLoader(valid_dataset,  batch_size=args.batch_size, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, pin_memory=True)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle= False, pin_memory=True)
+    valid_loader = DataLoader(valid_dataset,  batch_size=args.batch_size, shuffle=False, pin_memory=True)
 
     '''
     TODO: Call the train function to start training your model
