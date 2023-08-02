@@ -181,12 +181,12 @@ def main(args):
 
     
     train_dir = os.path.join(args.data_dir, 'train')
-    valid_dir = os.path.join(args.data_dir, 'valid')
+    valid_dir = os.path.join(args.data_dir, 'validation')
     test_dir = os.path.join(args.data_dir, 'test')
 
     transform_train = create_transform("train", args.image_size)
     transform_test = create_transform("test", args.image_size)
-    transform_valid = create_transform("valid", args.image_size)
+    transform_valid = create_transform("validation", args.image_size)
 
     train_dataset = datasets.ImageFolder(root= train_dir, transform= transform_train)
     valid_dataset = datasets.ImageFolder(root= valid_dir, transform= transform_valid)
