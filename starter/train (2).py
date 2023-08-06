@@ -180,13 +180,16 @@ def main(args):
     loss_criterion = nn.CrossEntropyLoss()
 
     
-    train_dir = os.path.join(args.data_dir, 'train')
-    valid_dir = os.path.join(args.data_dir, 'validation')
-    test_dir = os.path.join(args.data_dir, 'test')
+    # train_dir = os.path.join(args.data_dir, 'train')
+    # valid_dir = os.path.join(args.data_dir, 'valid')
+    # test_dir = os.path.join(args.data_dir, 'test')
+    train_dir = os.path.join(args.train_dir)
+    valid_dir = os.path.join(args.valid_dir)
+    test_dir = os.path.join(args.test_dir)
 
     transform_train = create_transform("train", args.image_size)
     transform_test = create_transform("test", args.image_size)
-    transform_valid = create_transform("validation", args.image_size)
+    transform_valid = create_transform("valid", args.image_size)
 
     train_dataset = datasets.ImageFolder(root= train_dir, transform= transform_train)
     valid_dataset = datasets.ImageFolder(root= valid_dir, transform= transform_valid)
@@ -219,12 +222,14 @@ if __name__=='__main__':
     '''
     TODO: Specify all the hyperparameters you need to use to train your model.
     '''
-    parser.add_argument("--num_classes", type=int, default= 133)
+    parser.add_argument("--num_classes", type=int, default= 5)
     parser.add_argument("--epochs", type=int, default= 5)
     parser.add_argument("--lr", type=float, default= 0.01)
     parser.add_argument("--batch_size", type=int, default= 16)
     parser.add_argument("--image_size", type=int, default= 224)
-    parser.add_argument("--data_dir",  type=str, default= os.environ["SM_CHANNEL_TRAINING"])
+    parser.add_argument("--train_dir",  type=str, default= os.environ["SM_CHANNEL_TRAINING"])
+    parser.add_argument("--valid_dir", type=str, default=os.environ["SM_CHANNEL_VALID"])
+    parser.add_argument("--test_dir", type=str, default=os.environ["SM_CHANNEL_TEST"])
     parser.add_argument("--model_path",  type=str, default= os.environ["SM_MODEL_DIR"])
     args=parser.parse_args()
     
