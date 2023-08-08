@@ -16,7 +16,7 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 JSON_CONTENT_TYPE = 'application/json'
 JPEG_CONTENT_TYPE = 'image/jpeg'
 
-# Resnet50 Model we have trained our model on
+
 def Net():
     model = models.resnet50(pretrained=True)
 
@@ -26,17 +26,17 @@ def Net():
     model.fc = nn.Sequential(
                    nn.Linear(2048, 128),
                    nn.ReLU(inplace=True),
-                   nn.Linear(128, 133))
+                   nn.Linear(128, 5))
     return model
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu") #GPU
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 
 def model_fn(model_dir):
     print("In model_fn. Model directory is -")
     print(model_dir)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu") #GPU
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = Net().to(device)
     
     with open(os.path.join(model_dir, "model.pth"), "rb") as f:
@@ -72,7 +72,7 @@ def input_fn(request_body, content_type=JPEG_CONTENT_TYPE):
     
     raise Exception('Requested unsupported ContentType in content_type: {}'.format(content_type))
 
-# Inference with the same pre-processing as we did during model training
+# inference
 def predict_fn(input_object, model):
     logger.info('In predict fn')
     test_transform = transforms.Compose([
@@ -86,3 +86,9 @@ def predict_fn(input_object, model):
         logger.info("Calling model")
         prediction = model(input_object.unsqueeze(0))
     return prediction
+
+
+def output_fn(predictions, content_type):
+    assert content_type == "application/json"
+    res = predictions.cpu().numpy().tolist()
+    return json.dumps(res)

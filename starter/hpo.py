@@ -15,18 +15,12 @@ import torch.nn.functional as F
 from torchvision import datasets, transforms
 from torch.utils.data import Dataset, DataLoader
 from PIL import ImageFile
-from smdebug.pytorch import get_hook
-from smdebug.pytorch import modes
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler(sys.stdout))
-
-hook = get_hook(create_if_not_exists=True)
-
-#TODO: Import dependencies for Debugging andd Profiling
 
 def test(model, test_loader, loss_criterion):
     '''
@@ -35,8 +29,6 @@ def test(model, test_loader, loss_criterion):
           Remember to include any debugging/profiling hooks that you might need
     '''
     logger.info("Testing started.")
-    if hook:
-        hook.set_mode(modes.EVAL)
     test_loss = 0
     correct = 0
     model.to("cpu")
@@ -46,7 +38,6 @@ def test(model, test_loader, loss_criterion):
             
             output = model(data)
             test_loss += loss_criterion(output, target).item()  # sum up batch loss
-            
             _, pred = torch.max(output, 1)           
             correct += torch.sum(pred==target.data).item()
 
@@ -62,17 +53,12 @@ def train(model, train_loader, valid_loader, loss_criterion, optimizer, epochs, 
           Remember to include any debugging/profiling hooks that you might need
     '''
     logger.info("Start training model.")
-    loss_criterion = nn.CrossEntropyLoss()   
-
+    loss_criterion = nn.CrossEntropyLoss()
 
     for epoch in range(epochs):
         train_loss = 0
         model.train()
         model.to(device)
-        
-        if hook:
-            hook.set_mode(modes.TRAIN)
-
 
         for batch_idx, (data, target) in enumerate(train_loader):
             data = data.to(device)
@@ -92,9 +78,7 @@ def train(model, train_loader, valid_loader, loss_criterion, optimizer, epochs, 
 
         val_loss = 0
         model.eval()
-        if hook:
-            hook.set_mode(modes.EVAL)
-            
+
         with torch.no_grad():
             for data, target in valid_loader:
                 data = data.to(device)
@@ -121,10 +105,11 @@ def net(num_classes):
     for param in model.parameters():
         param.requires_grad = False   
 
-    num_features=model.fc.in_features
+    num_features = model.fc.in_features
     model.fc = nn.Linear(num_features, num_classes)
     logger.info("Model has created.")
     return model
+
 
 def create_data_loaders(data, batch_size):
     '''
@@ -132,7 +117,6 @@ def create_data_loaders(data, batch_size):
     depending on whether you need to use data loaders or not
     '''
     pass
-
 
 def create_transform(split, image_size):
     logger.info("Start Transformation pipeline ")
@@ -151,7 +135,7 @@ def create_transform(split, image_size):
 
     elif split == "valid":
         valid_transforms = transforms.Compose([
-            transforms.Resize((image_size,image_size)), 
+            transforms.Resize((image_size,image_size)),  
             transforms.ToTensor(),
         ])
 
@@ -160,12 +144,13 @@ def create_transform(split, image_size):
 
     elif split == "test":
         test_transforms = transforms.Compose([
-            transforms.Resize((image_size,image_size)),
+            transforms.Resize((image_size,image_size)),     
             transforms.ToTensor(),
 
         ])
         logger.info("Transformation pipeline has completed")
         return test_transforms
+    
     
 def main(args):
     '''
@@ -195,9 +180,9 @@ def main(args):
     valid_dataset = datasets.ImageFolder(root= valid_dir, transform= transform_valid)
     test_dataset = datasets.ImageFolder(root= test_dir, transform= transform_test)
 
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, pin_memory=True)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle= False, pin_memory=True)
-    valid_loader = DataLoader(valid_dataset,  batch_size=args.batch_size, shuffle=False, pin_memory=True)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle= False)
+    valid_loader = DataLoader(valid_dataset,  batch_size=args.batch_size, shuffle=False)
 
     '''
     TODO: Call the train function to start training your model
@@ -216,6 +201,8 @@ def main(args):
     torch.save(model.cpu().state_dict(), 
                 os.path.join(args.model_path,"model.pth"))
     logger.info("Model weights saved.")
+
+
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser()
